@@ -4,6 +4,12 @@ services:
       context: .
       args:
         BUILD_VERSION: "1.0.0"
+        # Пусто — сборка идёт напрямую с Docker Hub, PyPI и npmjs.
+        # Значения для внутренних зеркал держите в .env, см. .env.example.
+        REGISTRY: "${WDWS_REGISTRY:-}"
+        NPM_CONFIG_REGISTRY: "${WDWS_NPM_REGISTRY:-}"
+        PIP_INDEX_URL: "${WDWS_PIP_INDEX_URL:-}"
+        PIP_TRUSTED_HOST: "${WDWS_PIP_TRUSTED_HOST:-}"
     image: where-do-we-stand:1.0.0
     ports:
       - "${WDWS_PORT:-8080}:8000"
@@ -12,7 +18,9 @@ services:
     restart: unless-stopped
     mem_limit: 512m
     healthcheck:
-      test: ["CMD", "curl", "-fsS", "http://localhost:8000/api/health"]
+      # Через Python, а не curl: в образе нет пакетов из apt, чтобы сборке
+      # в изолированном контуре не требовались репозитории Debian.
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health', timeout=3)"]
       interval: 30s
       timeout: 3s
       retries: 3

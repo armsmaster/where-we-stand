@@ -171,6 +171,145 @@ python scripts/build_fonts.py
 
 ---
 
+## Развёртывание в изолированном контуре
+
+Сеть нужна **только при сборке образа**. Работающий сервис в интернет не ходит —
+шрифты, растеризатор и зависимости зафиксированы на этапе сборки. Проверяется
+шагом 5 приёмки: отрисовка выполняется в контейнере с `--network none`.
+
+### Три канала, а не один
+
+Настройка только демона Docker — самая частая ошибка: базовые образы скачаются,
+а `npm ci` внутри сборки повиснет на таймауте.
+
+| Что ходит в сеть | Кто ходит | Зеркала (Nexus) | HTTP-прокси |
+|---|---|---|---|
+| `docker pull` базовых образов | демон Docker | `registry-mirrors` в настройках демона | настройки демона |
+| `npm ci` и `pip wheel` | процессы внутри сборки | `.env` рядом с `docker-compose.yml` | `~/.docker/config.json` |
+| работа сервиса | никто | ничего не нужно | ничего не нужно |
+
+Пакеты через `apt` не ставятся: healthcheck работает на Python, который в образе
+уже есть. Поэтому репозитории Debian — которые в контурах закрывают отдельно
+от PyPI и npm — для сборки не требуются.
+
+### Через внутренние зеркала (Nexus)
+
+Основной путь, если npm, pip и Docker Hub проксируются через Nexus.
+
+**npm и pip — через `.env`.** Скопируйте образец и подставьте адреса:
+
+```bash
+cp .env.example .env
+```
+
+```
+WDWS_NPM_REGISTRY=https://nexus.corp/repository/npm-proxy/
+WDWS_PIP_INDEX_URL=https://nexus.corp/repository/pypi-proxy/simple
+```
+
+`docker compose build` подхватит их автоматически. Dockerfile править не нужно:
+адреса приходят аргументами сборки, npm и pip читают их сами и при пустом
+значении берут умолчания. В итоговый образ аргументы не попадают.
+
+Обратите внимание на `/simple` в конце адреса pip — без него индекс не найдётся.
+
+**Docker Hub — двумя способами.** Предпочтительный: подключить Nexus
+как registry-mirror в настройках демона.
+
+Docker Desktop → Settings → Docker Engine:
+
+```json
+{ "registry-mirrors": ["https://nexus.corp:8082"] }
+```
+
+Linux: то же в `/etc/docker/daemon.json`, затем `sudo systemctl restart docker`.
+
+Имена базовых образов при этом не меняются, digest проверяется как обычно,
+`WDWS_REGISTRY` остаётся пустым.
+
+Запасной способ, если зеркало приходится указывать именем образа, — префикс
+в `.env` (со слэшем на конце; возможно, потребуется добавить `library/`):
+
+```
+WDWS_REGISTRY=nexus.corp:8082/
+```
+
+### Закрепление по digest и Nexus
+
+Снимать закрепление не нужно — вопреки распространённому ожиданию, оно
+с зеркалом совместимо.
+
+Nexus в роли **proxy repository** отдаёт манифест байт-в-байт, поэтому digest
+сохраняется, и закрепление работает при обоих способах выше. Digest изменится
+только если образы **перезалиты** в hosted-репозиторий через
+`docker pull` → `docker tag` → `docker push`: эта последовательность
+пересобирает манифест. `skopeo copy` и `crane copy` копируют digest как есть.
+
+Если digest всё же не совпал, сборка упадёт с `manifest unknown` — это
+правильное поведение, а не помеха. Реакция: узнать digest внутреннего образа
+и зафиксировать его в `FROM`, а не убирать `@sha256:`.
+
+```bash
+docker manifest inspect nexus.corp:8082/library/python:3.12-slim | grep -m1 digest
+```
+
+### Через HTTP-прокси
+
+Если вместо зеркал обычный прокси, `.env` не нужен — настраиваются два места.
+
+Демон, для базовых образов. Docker Desktop: Settings → Resources → Proxies →
+Manual proxy configuration, внутренние адреса в Bypass. Linux с systemd:
+
+```bash
+sudo mkdir -p /etc/systemd/system/docker.service.d
+sudo tee /etc/systemd/system/docker.service.d/http-proxy.conf <<'EOF'
+[Service]
+Environment="HTTP_PROXY=http://proxy.corp:3128"
+Environment="HTTPS_PROXY=http://proxy.corp:3128"
+Environment="NO_PROXY=localhost,127.0.0.1,.corp.local"
+EOF
+sudo systemctl daemon-reload && sudo systemctl restart docker
+```
+
+Сборка, для npm и pip. В `~/.docker/config.json` (на Windows —
+`C:\Users\<вы>\.docker\config.json`) рядом с существующими ключами:
+
+```json
+"proxies": {
+  "default": {
+    "httpProxy": "http://proxy.corp:3128",
+    "httpsProxy": "http://proxy.corp:3128",
+    "noProxy": "localhost,127.0.0.1,.corp.local"
+  }
+}
+```
+
+BuildKit прокинет это в каждый `RUN` как `HTTP_PROXY`/`HTTPS_PROXY`/`NO_PROXY`
+и их строчные варианты. Это предопределённые build-аргументы, в образ они
+не попадают.
+
+### Проверка
+
+```bash
+docker compose build --progress=plain 2>&1 | grep -iE "Looking in indexes|nexus|manifest unknown|timed out|Could not resolve"
+```
+
+Строка `Looking in indexes: ...` от pip показывает фактически использованный
+индекс — по ней видно, подхватилось зеркало или сборка ушла на pypi.org.
+
+### Хранение образа
+
+Собранный образ сохраняйте во внутренний реестр или архивом:
+
+```bash
+docker save where-do-we-stand:1.0.0 | gzip > where-do-we-stand-1.0.0.tar.gz
+```
+
+Рассчитывать на успешную пересборку из npm и pip через три года нельзя —
+это не гипотеза, а норма.
+
+---
+
 ## Регламент публикации
 
 Картинку отправлять в Telegram **файлом, а не фотографией**. Фотографии
