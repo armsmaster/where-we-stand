@@ -1,0 +1,13 @@
+.venv/
+.fontsrc/
+.out/
+.git/
+**/__pycache__/
+**/*.pyc
+.pytest_cache/
+frontend/node_modules/
+frontend/dist/
+vendor/resvg/win64/
+backend/tests/
+SPEC.md
+README.md

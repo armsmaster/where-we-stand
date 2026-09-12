@@ -1,0 +1,64 @@
+{
+  "faces": [
+    {
+      "file": "Arimo-Regular.ttf",
+      "family": "Arimo",
+      "style": "Regular",
+      "weight": 400,
+      "size": 321576,
+      "sha256": "ea96fee5fea76861f89c7069cc133c62214ea97ff279b223ac62f7109e501fbc"
+    },
+    {
+      "file": "Arimo-Medium.ttf",
+      "family": "Arimo",
+      "style": "Medium",
+      "weight": 500,
+      "size": 324572,
+      "sha256": "e7f4f84eadc168082b38f34c977e4ed07978b7ab4bf8b7550531341086d759f8"
+    },
+    {
+      "file": "Arimo-SemiBold.ttf",
+      "family": "Arimo",
+      "style": "SemiBold",
+      "weight": 600,
+      "size": 325600,
+      "sha256": "7fbd00ccceca77353d0f17818755ed31cf4745542d9b8316ccf1a7a423f562b5"
+    },
+    {
+      "file": "Inter-Regular.ttf",
+      "family": "Inter",
+      "style": "Regular",
+      "weight": 400,
+      "size": 341528,
+      "sha256": "4cdeffb003974e69f00a689ab76707e7bf10050a0d11eae4e3f91d3974ab83dd"
+    },
+    {
+      "file": "Inter-Medium.ttf",
+      "family": "Inter",
+      "style": "Medium",
+      "weight": 500,
+      "size": 342112,
+      "sha256": "98787543d92ff0eb0879cd9da668c561359c31be912cac2109bc3a97da304b85"
+    },
+    {
+      "file": "Inter-SemiBold.ttf",
+      "family": "Inter",
+      "style": "SemiBold",
+      "weight": 600,
+      "size": 342800,
+      "sha256": "86bfde9d10b1515eef7c47d6ea99eab193b6fc6ffe680fe49225be42cfc08d99"
+    }
+  ],
+  "sources": {
+    "Arimo": {
+      "url": "https://github.com/google/fonts/raw/main/ofl/arimo/Arimo%5Bwght%5D.ttf",
+      "sha256": "e43898b143ec826ac8cb4034816458a7047fbe0836558de2a1f8c6223ae3e0ca",
+      "license": "OFL-Arimo.txt"
+    },
+    "Inter": {
+      "url": "https://github.com/google/fonts/raw/main/ofl/inter/Inter%5Bopsz,wght%5D.ttf",
+      "sha256": "29160a80ff49ddcab2c97711247e08b1fab27a484a329ce8b813d820dc559031",
+      "license": "OFL-Inter.txt"
+    }
+  }
+}

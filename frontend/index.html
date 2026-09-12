@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Где мы находимся</title>
+  </head>
+  <body>
+    <div class="app">
+      <aside class="panel" id="panel">
+        <header class="panel-head">
+          <h1>Где мы находимся</h1>
+          <span class="build" id="build"></span>
+        </header>
+
+        <section class="block">
+          <h2>1 · Данные</h2>
+          <div class="row-controls">
+            <label class="file-button">
+              <input type="file" id="data-file" accept=".xlsx,.xlsm" hidden />
+              Загрузить Excel
+            </label>
+            <a class="link" href="/api/template.xlsx" download>Скачать шаблон</a>
+          </div>
+          <p class="hint" id="data-name">Файл не загружен</p>
+        </section>
+
+        <section class="block" id="issues-block" hidden>
+          <h2>2 · Проверка</h2>
+          <ul class="issues" id="issues"></ul>
+        </section>
+
+        <section class="block" id="table-block" hidden>
+          <h2>3 · Распознанные данные</h2>
+          <p class="hint" id="as-of"></p>
+          <div class="table-wrap">
+            <table class="data-table" id="data-table"></table>
+          </div>
+        </section>
+
+        <section class="block" id="settings-block">
+          <h2>4 · Оформление</h2>
+          <div id="form"></div>
+        </section>
+
+        <section class="block">
+          <h2>5 · Пресеты и файл настроек</h2>
+          <div class="row-controls">
+            <select id="preset-select">
+              <option value="">— пресет —</option>
+            </select>
+            <label class="file-button">
+              <input type="file" id="settings-file" accept=".json,application/json" hidden />
+              Загрузить JSON
+            </label>
+            <button type="button" id="save-settings">Сохранить JSON</button>
+          </div>
+        </section>
+
+        <section class="block">
+          <h2>6 · Выгрузка</h2>
+          <div class="row-controls">
+            <button type="button" id="download-png" disabled>Скачать PNG</button>
+            <button type="button" id="download-svg" disabled>Скачать SVG</button>
+          </div>
+        </section>
+      </aside>
+
+      <main class="preview">
+        <div class="preview-bar">
+          <span id="preview-size">—</span>
+          <span class="spacer"></span>
+          <span class="status" id="preview-status"></span>
+        </div>
+        <div class="preview-stage" id="stage">
+          <p class="placeholder" id="placeholder">
+            Загрузите файл данных, чтобы увидеть картинку.
+          </p>
+          <img id="preview-image" alt="Превью" hidden />
+        </div>
+      </main>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

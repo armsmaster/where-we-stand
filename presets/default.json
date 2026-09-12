@@ -1,0 +1,94 @@
+{
+  "version": 1,
+  "canvas": {
+    "width": 1200,
+    "height": 690,
+    "scale": 2,
+    "background": "#FFFFFF",
+    "transparent": false,
+    "padding": {
+      "top": 32,
+      "right": 40,
+      "bottom": 32,
+      "left": 40
+    }
+  },
+  "typography": {
+    "family": "Arimo",
+    "title": {
+      "size": 28.0,
+      "weight": 600,
+      "color": "#111111"
+    },
+    "rowLabel": {
+      "size": 16.0,
+      "weight": 500,
+      "color": "#111111"
+    },
+    "value": {
+      "size": 15.0,
+      "weight": 500,
+      "color": "#111111"
+    },
+    "scaleEnds": {
+      "size": 13.0,
+      "weight": 400,
+      "color": "#777777"
+    },
+    "legend": {
+      "size": 13.0,
+      "weight": 400,
+      "color": "#777777"
+    },
+    "footnote": {
+      "size": 12.0,
+      "weight": 400,
+      "color": "#777777"
+    }
+  },
+  "geometry": {
+    "rowHeight": 92.0,
+    "labelColumnWidth": 240.0,
+    "labelGap": 16.0,
+    "trackHeight": 6.0,
+    "trackRadius": 3.0,
+    "currentRadius": 6.0,
+    "prevRadius": 4.5,
+    "prevStrokeWidth": 1.5,
+    "connectorWidth": 1.5,
+    "valueOffset": 11.0,
+    "scaleEndsOffset": 16.0,
+    "titleGap": 28.0,
+    "legendGap": 24.0,
+    "legendItemGap": 20.0,
+    "footnoteGap": 12.0,
+    "lineHeight": 1.35
+  },
+  "colors": {
+    "track": "#F1EFE8",
+    "current": "#378ADD",
+    "prev": "#888780",
+    "connector": "#888780"
+  },
+  "numberFormat": {
+    "decimalSeparator": ",",
+    "thousandsSeparator": " ",
+    "minusSign": "−",
+    "unitSeparator": " "
+  },
+  "rowOverrides": {},
+  "texts": {
+    "title": "Где мы находимся",
+    "legendCurrent": "сейчас",
+    "legendPrev": "неделю назад",
+    "legendScale": "шкала — диапазон за 12 месяцев",
+    "footnote": "У доходностей и премий выше по шкале — ниже цена бумаги.",
+    "source": "Источник: Мосбиржа, расчёты редакции. Данные на {as_of}"
+  },
+  "toggles": {
+    "showTitle": true,
+    "showLegend": true,
+    "showFootnote": true,
+    "showSource": true
+  }
+}
