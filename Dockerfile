@@ -9,6 +9,13 @@
 #
 # Требуется BuildKit (включён по умолчанию в docker compose v2) — из-за
 # кеш-монтирований, см. ниже.
+#
+# Корпоративный центр сертификации. Если зеркала отдаются с сертификатом
+# внутреннего ЦС, положите всю цепочку одним файлом в certs/ca.pem — npm и pip
+# будут проверять TLS по ней. Файл монтируется только на время команды и не
+# попадает ни в слои образа, ни в git. Отключать проверку сертификатов
+# (strict-ssl=false, PIP_TRUSTED_HOST) вместо этого не нужно. Без файла
+# сборка ведёт себя как раньше.
 
 # Префикс реестра для базовых образов. Пусто — Docker Hub напрямую.
 # Не требуется, если Nexus подключён как registry-mirror: тогда имена
@@ -27,7 +34,10 @@ COPY frontend/package.json frontend/package-lock.json ./
 
 # Кеш загрузок npm живёт в кеше BuildKit, а не в слое образа: правка соседних
 # строк Dockerfile сбрасывает слой, но не заставляет качать пакеты заново.
+# NODE_EXTRA_CA_CERTS дополняет встроенный список ЦС, а не заменяет его.
 RUN --mount=type=cache,target=/root/.npm \
+    --mount=type=bind,source=certs,target=/certs \
+    if [ -f /certs/ca.pem ]; then export NODE_EXTRA_CA_CERTS=/certs/ca.pem; fi; \
     npm ci --no-audit --no-fund
 
 COPY frontend/ ./
@@ -66,8 +76,14 @@ WORKDIR /app
 #
 # Кеш pip — в кеше BuildKit: в слой он не попадает, поэтому `--no-cache-dir`
 # не нужен, а повторная сборка не качает пакеты заново.
+#
+# PIP_CERT, в отличие от NODE_EXTRA_CA_CERTS, заменяет встроенный список ЦС.
+# Это корректно, пока все запросы pip идут в зеркало, подписанное тем же ЦС, —
+# а certs/ca.pem и нужен только там, где зеркало есть.
 COPY backend/requirements.txt ./
 RUN --mount=type=cache,target=/root/.cache/pip \
+    --mount=type=bind,source=certs,target=/certs \
+    if [ -f /certs/ca.pem ]; then export PIP_CERT=/certs/ca.pem; fi; \
     pip install -r requirements.txt \
     && rm requirements.txt
 
